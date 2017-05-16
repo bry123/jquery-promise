@@ -1,0 +1,44 @@
+var defers =[];
+$(document).ajaxSuccess(function(event, jqXHR, ajaxOptions, result) {
+	if (ajaxOptions.url == UCDAGILE + "/editPageInit!getPlugInsInfo.action") {
+		if (result && result.isSuccess) {
+			if(result.data.dependFiles){
+				var csses = result.data.dependFiles.cssPaths;
+				for(var i = 0;i<csses.length;i++){
+					
+					var defer = $.Deferred();
+				    defers.push(defer);
+				    var link = $('<link />');  
+				    link.attr('href', csses[i]);  
+				    link.attr('rel', 'stylesheet');  
+				    link.appendTo($('head'));  
+				    var link = $('link[href="'+csses[i]+'"]');
+				    link.on('load', function() {
+				    	defer.resolve();
+				    });
+				    
+				}
+//				var jses = result.data.dependFiles.jsPaths;
+//				for(var i = 0;i<jses.length;i++){
+//					 var oScript=$('<script />');	
+//				     oScript.attr('src', jses[i]);  
+//				     oScript.attr('type', 'text/javascript');
+//				     oScript.appendTo($('head')); 
+//				}
+				
+			}
+		}
+	}
+});
+$(document).ready(function(){
+	$.when.apply($,defers).then(function(){
+		var url  = window.location.search;
+		if (url.indexOf("?") != -1) {
+			var str = url.substr(1);
+			strs = str.split("&");
+			var projectCode = (strs[0].split("="))[1];
+			var projectStyle = (strs[1].split("="))[1];
+			new usecaseModule(projectCode, projectStyle);
+		}
+	});
+})
